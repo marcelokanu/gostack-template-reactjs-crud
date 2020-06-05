@@ -1,4 +1,5 @@
 import React, { useRef, useCallback } from 'react';
+import * as Yup from 'yup';
 
 import { FiCheckSquare } from 'react-icons/fi';
 import { FormHandles } from '@unform/core';
@@ -37,7 +38,26 @@ const ModalAddFood: React.FC<IModalProps> = ({
 
   const handleSubmit = useCallback(
     async (data: ICreateFoodData) => {
-      // TODO ADD A NEW FOOD AND CLOSE THE MODAL
+      try {
+        formRef.current?.setErrors({});
+
+        const schema = Yup.object().shape({
+          name: Yup.string().required('Nome obrigatório'),
+          image: Yup.string().required('Imagem obrigatório'),
+          price: Yup.string().required('Preço obrigatório'),
+          description: Yup.string().required('Descrição obrigatória'),
+        });
+
+        await schema.validate(data, { abortEarly: false });
+
+        handleAddFood(data);
+        setIsOpen();
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          alert('Todos os campos são obrigatórios');
+        }
+        console.log(err);
+      }
     },
     [handleAddFood, setIsOpen],
   );
